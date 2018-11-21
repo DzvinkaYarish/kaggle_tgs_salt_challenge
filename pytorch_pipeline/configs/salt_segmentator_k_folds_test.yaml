@@ -1,0 +1,44 @@
+---
+project: kaggle_salt_challenge
+experiment_desc: default_experiment
+dataroot: ../data/
+train_path: ../data/train
+test_path: ../data/test
+train_file: ../data/train/train.csv
+depth_file: ../data/depths.csv
+num_folds: 5
+folds_to_train: [2,3]
+num_depth_classes: 5
+num_coverage_classes: 11
+stratify_coverage: False
+stratify_depth: False
+recalculate_coverage_classes: True
+datasets:
+    train: /opt/train_triplets.pkl
+    validation: /opt/val_triplets.pkl
+
+model:
+    name: seresnext_unet
+    backbone: resnet34
+num_workers: 20
+batch_size: 32
+input_image_size: [101, 101]
+dataset_mode: online
+
+indexes_in_ensemble: [1, 3, 8]
+ensemble_1:
+  snapshot: '../pytorch_source/snapshots/snapshot_2_0_0.h5'
+  class: 'seresnext_unet'
+ensemble_3:
+  snapshot: '../pytorch_source/snapshots/snapshot_2_0_1.h5'
+  class: 'seresnext_unet'
+ensemble_8:
+  snapshot: '../pytorch_source/snapshots/snapshot_2_0_2.h5'
+  class: 'seresnext_unet'
+    # seresnext_net1 = get_model('seresnext_unet', '../pytorch_source/snapshots/snapshot_2_0_0.h5')
+    # seresnext_net0 = get_model('seresnext_unet', '../pytorch_source/snapshots/best_1_0.h5')
+    # seresnext_net2 = get_model('seresnext_unet', '../pytorch_source/snapshots/snapshot_2_0_1.h5')
+  # seresnext_net3 = get_model('seresnext_unet', '../pytorch_source/snapshots/snapshot_2_0_2.h5')
+  # seresnext_net4 = get_model('seresnext_unet', '../pytorch_source/snapshots/snapshot_2_0_3.h5')
+
+serialize_pred: False

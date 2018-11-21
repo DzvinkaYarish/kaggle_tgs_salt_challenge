@@ -1,0 +1,65 @@
+---
+project: kaggle_salt_challenge
+experiment_desc: default_experiment
+dataroot: ../data/
+train_path: ../data/train
+test_path: ../data/test
+train_file: ../data/train/train.csv
+depth_file: ../data/depths.csv
+num_folds: 5
+folds_to_train: [2,3]
+num_depth_classes: 5
+num_coverage_classes: 11
+stratify_coverage: False
+stratify_depth: False
+recalculate_coverage_classes: True
+datasets:
+    train: /opt/train_triplets.pkl
+    validation: /opt/val_triplets.pkl
+
+model:
+    name: seresnext_unet
+    backbone: resnet34
+num_workers: 20
+batch_size: 32
+input_image_size: [101, 101]
+dataset_mode: online
+stage0:
+  num_epochs: 0
+  loss: focal
+  optimizer:
+      name: adam
+      lr: 0.0001
+  scheduler:
+      name: plateau
+      mode: max
+      patience: 5
+      factor: 0.5
+      epsilon: 0.0001
+      min_lr: 0.00000001
+stage1:
+  num_epochs: 0
+  loss: lovasz
+  optimizer:
+      name: adam
+      lr: 0.0001
+  scheduler:
+      name: plateau
+      mode: max
+      patience: 5
+      factor: 0.5
+      epsilon: 0.0001
+      min_lr: 0.00000001
+cosine_annealing: False
+stage2:
+  num_epochs: 0
+  loss: lovasz
+  optimizer:
+      name: adam
+      lr: 0.0001
+  scheduler:
+      name: warmrestart
+      epochs: 105
+      epochs_per_cycle: 35
+      min_lr: 0.0000001
+serialize_pred: False
