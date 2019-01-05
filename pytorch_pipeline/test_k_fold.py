@@ -9,9 +9,10 @@ from dataset.dataset import TGSSaltDataset
 from losses import iou, lovasz_hinge, StableBCELoss
 from models.unet_vgg import UNet11
 from torchvision import transforms as torch_transforms
-from models.unet_resnet import UNetResNet
-from models.unet_densenet import UNetDenseNet
-from models.unet_seresnext import UNetSEResNext
+# from models.unet_resnet import UNetResNet
+# from models.unet_densenet import UNetDenseNet
+# from models.unet_seresnext import UNetSEResNext
+from models.universal_UNet import UNet
 import numpy as np
 from losses import iou_binary
 from torch.nn import functional as F
@@ -31,9 +32,11 @@ st = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d_%H:%M:%S')
 
 def get_model(model_name, weight_path):
     if model_name == 'dense_unet':
-        model = UNetDenseNet(encoder_depth=201, num_classes=1)
+        model = UNet('DenseNet', encoder_depth=201, num_classes=1)
     elif model_name == 'seresnext_unet':
-        model = UNetSEResNext(encoder_depth=50, num_classes=1)
+        model = UNet('SeResNext', encoder_depth=50, num_classes=1)
+    elif model_name == 'resnet_unet':
+        model = UNet('ResNet', encoder_depth=50, num_classes=1)
     else:
         raise NotImplementedError('Not implemented model %s' % model_name)
     model.load_state_dict(torch.load(weight_path)['model'])
@@ -159,7 +162,7 @@ def test_submit(test_path, models, test_file_list):
     submit = pd.DataFrame([test_file_list, all_masks]).T
     submit.columns = ['id', 'rle_mask']
     sub_name = config['experiment_desc']
-    submit.to_csv(f'{sub_name}_{st}.csv', index=False)
+    submit.to_csv(f'experiments/default_experiment/{sub_name}_{st}.csv', index=False)
 
     if config['serialize_pred']:
         with open(f'{sub_name}_{st}.pickle', 'wb') as file:
@@ -170,13 +173,13 @@ if __name__ == '__main__':
     with open('configs/salt_segmentator_k_folds_test.yaml', 'r') as f:
         config = yaml.load(f)
 
-    models_indexes = config['indexes_in_ensemble']
-    models = []
-    for model_index in models_indexes:
-        model_class = config[f'ensemble_{model_index}']['class']
-        model_snapshot = config[f'ensemble_{model_index}']['snapshot']
-        print(f'Using [{model_class}] from [{model_snapshot}]')
-        models.append(get_model(model_class, model_snapshot))
+    # models_indexes = config['indexes_in_ensemble']
+    # models = []
+    # for model_index in models_indexes:
+    #     model_class = config[f'ensemble_{model_index}']['class']
+    #     model_snapshot = config[f'ensemble_{model_index}']['snapshot']
+    #     print(f'Using [{model_class}] from [{model_snapshot}]')
+    #     models.append(get_model(model_class, model_snapshot))
 
     val_dataset, test_file_list = get_data(config['dataroot'], config['test_path'])
 
